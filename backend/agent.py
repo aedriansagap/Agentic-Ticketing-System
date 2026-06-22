@@ -1,6 +1,5 @@
 from langchain_core.tools import tool
-from langchain.agents import AgentExecutor, create_react_agent
-from langchain_core.prompts import PromptTemplate
+from langgraph.prebuilt import create_react_agent
 from langchain_openai import ChatOpenAI
 import httpx
 import os
@@ -65,35 +64,16 @@ def update_ticket_status(ticket_id: int, status: str) -> str:
 
 tools = [get_all_tickets, get_ticket, create_new_ticket, update_ticket_status]
 
-template = '''Answer the following questions as best you can. You have access to the following tools:
-
-{tools}
-
-Use the following format:
-
-Question: the input question you must answer
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: I now know the final answer
-Final Answer: the final answer to the original input question
-
-Begin!
-
-Question: {input}
-Thought:{agent_scratchpad}'''
-
-prompt = PromptTemplate.from_template(template)
-
-agent = create_react_agent(llm, tools, prompt)
-agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, handle_parsing_errors=True)
+agent_executor = create_react_agent(llm, tools)
 
 def process_chat(message: str) -> str:
     try:
-        result = agent_executor.invoke({"input": message})
-        return result.get("output", "I could not generate a response.")
+        system_msg = "You are an AI support agent. You help users manage support tickets. You must ALWAYS use tools to view, create or update tickets."
+        result = agent_executor.invoke({"messages": [
+            ("system", system_msg),
+            ("user", message)
+        ]})
+        return result["messages"][-1].content
     except Exception as e:
         print(f"Agent error: {e}")
         return f"I encountered an error connecting to the AI system: {e}"
