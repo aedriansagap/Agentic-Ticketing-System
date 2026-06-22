@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlmodel
+langchain
+langchain-core
+langchain-community
+langchain-openai
+pydantic
+httpx
