@@ -1,5 +1,8 @@
+# pyrefly: ignore [missing-import]
 from langchain_core.tools import tool
-from langgraph.prebuilt import create_react_agent
+# pyrefly: ignore [missing-import]
+from langchain.agents import create_agent
+# pyrefly: ignore [missing-import]
 from langchain_openai import ChatOpenAI
 import httpx
 import os
@@ -9,8 +12,8 @@ LLAMA_CPP_SERVER_URL = os.getenv("LLAMA_CPP_SERVER_URL", "http://localhost:8080/
 
 llm = ChatOpenAI(
     model="gemma-4", 
-    openai_api_key="not-needed",
-    openai_api_base=LLAMA_CPP_SERVER_URL,
+    api_key="not-needed",
+    base_url=LLAMA_CPP_SERVER_URL,
     temperature=0.1
 )
 
@@ -64,13 +67,12 @@ def update_ticket_status(ticket_id: int, status: str) -> str:
 
 tools = [get_all_tickets, get_ticket, create_new_ticket, update_ticket_status]
 
-agent_executor = create_react_agent(llm, tools)
+system_msg = "You are an AI support agent. You help users manage support tickets. You must ALWAYS use tools to view, create or update tickets."
+agent_executor = create_agent(model=llm, tools=tools, system_prompt=system_msg)
 
 def process_chat(message: str) -> str:
     try:
-        system_msg = "You are an AI support agent. You help users manage support tickets. You must ALWAYS use tools to view, create or update tickets."
         result = agent_executor.invoke({"messages": [
-            ("system", system_msg),
             ("user", message)
         ]})
         return result["messages"][-1].content
