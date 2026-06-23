@@ -15,10 +15,15 @@ export default function AgentChat() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageListRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messageListRef.current) {
+      messageListRef.current.scrollTo({
+        top: messageListRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }, [messages]);
 
   const handleSend = async () => {
@@ -60,7 +65,7 @@ export default function AgentChat() {
         <h2>Agent Chat</h2>
       </div>
       
-      <div className={styles.messageList}>
+      <div className={styles.messageList} ref={messageListRef}>
         {messages.map(msg => (
           <motion.div
             key={msg.id}
@@ -84,7 +89,6 @@ export default function AgentChat() {
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       <div className={styles.inputArea}>
