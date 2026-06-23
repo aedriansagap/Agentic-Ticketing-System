@@ -66,6 +66,9 @@ body::after {
   border: 1px solid var(--glass-border);
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 var(--glass-highlight);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .app-container {
@@ -75,6 +78,7 @@ body::after {
   gap: 24px;
   max-width: 1600px;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 .dashboard-section {
