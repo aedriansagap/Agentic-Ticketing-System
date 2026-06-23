@@ -1,17 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap');
 
 :root {
-  --bg-color: #0f172a; 
-  --text-primary: #f8fafc; 
-  --text-secondary: #94a3b8; 
-  --glass-bg: rgba(30, 41, 59, 0.7); 
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --accent-color: #3b82f6; 
-  --accent-hover: #2563eb; 
-  --status-open: #22c55e;
-  --status-in-progress: #eab308;
-  --status-resolved: #3b82f6;
-  --status-closed: #64748b;
+  --bg-color: #0b0f19;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --glass-bg: rgba(17, 24, 39, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.15);
+  --accent-color: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --status-open: #34d399;
+  --status-in-progress: #fbbf24;
+  --status-resolved: #60a5fa;
+  --status-closed: #94a3b8;
+  --font-heading: 'Outfit', sans-serif;
   --font-main: 'Inter', sans-serif;
 }
 
@@ -27,15 +30,42 @@ body {
   color: var(--text-primary);
   height: 100vh;
   overflow: hidden;
+  position: relative;
+}
+
+/* Animated Mesh Gradient Background */
+body::before, body::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  z-index: -1;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.15) 0%, transparent 30%);
+  animation: bg-rotate 30s linear infinite;
+}
+
+body::after {
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(56, 189, 248, 0.1) 0%, transparent 40%);
+  animation: bg-rotate 40s linear infinite reverse;
+}
+
+@keyframes bg-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .glass-panel {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 var(--glass-highlight);
 }
 
 .app-container {
@@ -43,6 +73,18 @@ body {
   height: 100vh;
   padding: 24px;
   gap: 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.dashboard-section {
+  flex: 65;
+  min-width: 0;
+}
+
+.chat-section {
+  flex: 35;
+  min-width: 0;
 }
 
 /* Scrollbar styling */
@@ -53,7 +95,7 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
