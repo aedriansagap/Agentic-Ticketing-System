@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from database import create_db_and_tables
-from routes import tickets, chat
+from routes import tickets, chat, auth
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
@@ -19,6 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(tickets.router, prefix="/api/tickets", tags=["Tickets"])
 app.include_router(chat.router, prefix="/api/chat", tags=["Agent Chat"])
 

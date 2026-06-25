@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Bot, User } from 'lucide-react';
 import styles from './AgentChat.module.css';
+import { useAuth } from '../context/AuthContext';
 
 interface Message {
   id: number;
@@ -16,6 +17,7 @@ export default function AgentChat() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messageListRef = useRef<HTMLDivElement>(null);
+  const { token } = useAuth();
 
   useEffect(() => {
     if (messageListRef.current) {
@@ -37,7 +39,10 @@ export default function AgentChat() {
     try {
       const res = await fetch('http://localhost:8000/api/chat/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ message: input })
       });
       const data = await res.json();
