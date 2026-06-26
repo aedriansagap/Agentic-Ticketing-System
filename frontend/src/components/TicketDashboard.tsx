@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Ticket, CheckCircle, Trash2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Ticket, CheckCircle, Trash2, MessageSquare, Send } from 'lucide-react';
 import styles from './TicketDashboard.module.css';
 import { useAuth } from '../context/AuthContext';
 
@@ -12,8 +12,18 @@ interface TicketData {
   priority: string;
 }
 
+interface CommentData {
+  id: number;
+  content: string;
+  author_username: string;
+  created_at: string;
+}
+
 export default function TicketDashboard() {
   const [tickets, setTickets] = useState<TicketData[]>([]);
+  const [expandedTicketId, setExpandedTicketId] = useState<number | null>(null);
+  const [comments, setComments] = useState<Record<number, CommentData[]>>({});
+  const [newComment, setNewComment] = useState('');
   const { token } = useAuth();
 
   const fetchTickets = async () => {
@@ -36,7 +46,49 @@ export default function TicketDashboard() {
     return () => clearInterval(interval);
   }, [token]);
 
-  const handleResolve = async (id: number, currentTicket: TicketData) => {
+  const fetchComments = async (ticketId: number) => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/tickets/${ticketId}/comments`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setComments(prev => ({ ...prev, [ticketId]: data }));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleToggleExpand = (ticketId: number) => {
+    if (expandedTicketId === ticketId) {
+      setExpandedTicketId(null);
+    } else {
+      setExpandedTicketId(ticketId);
+      fetchComments(ticketId);
+    }
+  };
+
+  const handleAddComment = async (ticketId: number) => {
+    if (!newComment.trim()) return;
+    try {
+      await fetch(`http://localhost:8000/api/tickets/${ticketId}/comments`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ content: newComment })
+      });
+      setNewComment('');
+      fetchComments(ticketId);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleResolve = async (e: React.MouseEvent, id: number, currentTicket: TicketData) => {
+    e.stopPropagation();
     try {
       await fetch(`http://localhost:8000/api/tickets/${id}`, {
         method: 'PUT',
@@ -52,7 +104,8 @@ export default function TicketDashboard() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
     try {
       await fetch(`http://localhost:8000/api/tickets/${id}`, {
         method: 'DELETE',
@@ -76,7 +129,8 @@ export default function TicketDashboard() {
             key={ticket.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className={styles.ticketCard}
+            className={`${styles.ticketCard} ${expandedTicketId === ticket.id ? styles.expanded : ''}`}
+            onClick={() => handleToggleExpand(ticket.id)}
           >
             <div className={styles.cardHeader}>
               <h3>#{ticket.id} {ticket.title}</h3>
@@ -85,15 +139,17 @@ export default function TicketDashboard() {
                   {ticket.status.replace('_', ' ')}
                 </span>
                 <button 
-                  onClick={() => handleResolve(ticket.id, ticket)} 
-                  style={{ background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', padding: '4px' }}
+                  onClick={(e) => handleResolve(e, ticket.id, ticket)} 
+                  className={styles.actionBtn}
+                  style={{ color: '#10b981' }}
                   title="Mark Resolved"
                 >
                   <CheckCircle size={18} />
                 </button>
                 <button 
-                  onClick={() => handleDelete(ticket.id)} 
-                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                  onClick={(e) => handleDelete(e, ticket.id)} 
+                  className={styles.actionBtn}
+                  style={{ color: '#ef4444' }}
                   title="Delete Ticket"
                 >
                   <Trash2 size={18} />
@@ -101,7 +157,52 @@ export default function TicketDashboard() {
               </div>
             </div>
             <p className={styles.description}>{ticket.description}</p>
-            <span className={styles.priority}>Priority: {ticket.priority}</span>
+            
+            <div className={styles.footerRow}>
+              <span className={styles.priority}>Priority: {ticket.priority}</span>
+              <span className={styles.commentCount}>
+                <MessageSquare size={14} /> View Comments
+              </span>
+            </div>
+
+            <AnimatePresence>
+              {expandedTicketId === ticket.id && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className={styles.commentsSection}
+                  onClick={e => e.stopPropagation()}
+                >
+                  <div className={styles.commentsList}>
+                    {comments[ticket.id]?.length === 0 && (
+                      <p className={styles.noComments}>No comments yet.</p>
+                    )}
+                    {comments[ticket.id]?.map(comment => (
+                      <div key={comment.id} className={styles.commentBubble}>
+                        <strong>{comment.author_username}</strong>
+                        <p>{comment.content}</p>
+                        <span className={styles.commentTime}>
+                          {new Date(comment.created_at).toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className={styles.addComment}>
+                    <input 
+                      type="text" 
+                      value={newComment}
+                      onChange={e => setNewComment(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleAddComment(ticket.id)}
+                      placeholder="Add a reply..."
+                    />
+                    <button onClick={() => handleAddComment(ticket.id)}>
+                      <Send size={16} />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         ))}
         {tickets.length === 0 && (

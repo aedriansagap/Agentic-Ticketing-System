@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from typing import List
 
 from database import get_session
-from models import Ticket, User
+from models import Ticket, User, Comment, CommentCreate
 from auth import get_current_user
 
 router = APIRouter()
@@ -63,3 +63,33 @@ def delete_ticket(ticket_id: int, session: Session = Depends(get_session), curre
     session.delete(ticket)
     session.commit()
     return {"ok": True}
+
+@router.get("/{ticket_id}/comments", response_model=List[Comment])
+def read_comments(ticket_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    ticket = session.get(Ticket, ticket_id)
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    if current_user.role != "admin" and ticket.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to view comments")
+        
+    comments = session.exec(select(Comment).where(Comment.ticket_id == ticket_id).order_by(Comment.created_at)).all()
+    return comments
+
+@router.post("/{ticket_id}/comments", response_model=Comment)
+def create_comment(ticket_id: int, comment: CommentCreate, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    ticket = session.get(Ticket, ticket_id)
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    if current_user.role != "admin" and ticket.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to comment")
+        
+    new_comment = Comment(
+        content=comment.content,
+        ticket_id=ticket_id,
+        author_id=current_user.id,
+        author_username=current_user.username
+    )
+    session.add(new_comment)
+    session.commit()
+    session.refresh(new_comment)
+    return new_comment

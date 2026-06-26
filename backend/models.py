@@ -21,3 +21,16 @@ class Ticket(SQLModel, table=True):
     priority: str = Field(default="medium") # low, medium, high
     created_at: datetime = Field(default_factory=datetime.utcnow)
     owner_id: Optional[int] = Field(default=None, foreign_key="user.id")
+
+class CommentBase(SQLModel):
+    content: str
+
+class CommentCreate(CommentBase):
+    pass
+
+class Comment(CommentBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    ticket_id: int = Field(foreign_key="ticket.id")
+    author_id: int = Field(foreign_key="user.id")
+    author_username: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)

@@ -70,10 +70,32 @@ def get_tools(token: str):
         except Exception as e:
             return f"Error: {e}"
 
-    return [get_all_tickets, get_ticket, create_new_ticket, update_ticket_status]
+    @tool
+    def read_ticket_comments(ticket_id: int) -> str:
+        """Fetch all comments/replies for a specific ticket. Use this to understand the conversation history of a ticket."""
+        try:
+            response = httpx.get(f"http://localhost:8000/api/tickets/{ticket_id}/comments", headers=headers)
+            return response.text
+        except Exception as e:
+            return f"Error: {e}"
+
+    @tool
+    def add_comment_to_ticket(ticket_id: int, content: str) -> str:
+        """Add a comment/reply to an existing ticket on behalf of the user. Use this to respond to support agents or provide more details."""
+        try:
+            response = httpx.post(
+                f"http://localhost:8000/api/tickets/{ticket_id}/comments",
+                json={"content": content},
+                headers=headers
+            )
+            return response.text
+        except Exception as e:
+            return f"Error: {e}"
+
+    return [get_all_tickets, get_ticket, create_new_ticket, update_ticket_status, read_ticket_comments, add_comment_to_ticket]
 
 
-system_msg = "You are an AI support agent. You help users manage support tickets. You must ALWAYS use tools to view, create or update tickets."
+system_msg = "You are an AI support agent. You help users manage support tickets. You must ALWAYS use tools to view, create, or update tickets. When discussing a specific ticket, you should use read_ticket_comments to understand the context, and add_comment_to_ticket to officially log the user's replies to the ticket thread."
 
 def process_chat(message: str, token: str) -> str:
     tools = get_tools(token)
