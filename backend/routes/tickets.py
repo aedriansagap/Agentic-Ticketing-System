@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
-from typing import List
+from sqlmodel import Session, select, or_
+from typing import List, Optional
 
 from database import get_session
 from models import Ticket, User, Comment, CommentCreate
@@ -17,11 +17,33 @@ def create_ticket(ticket: Ticket, session: Session = Depends(get_session), curre
     return ticket
 
 @router.get("/", response_model=List[Ticket])
-def read_tickets(skip: int = 0, limit: int = 100, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    if current_user.role == "admin":
-        tickets = session.exec(select(Ticket).offset(skip).limit(limit)).all()
-    else:
-        tickets = session.exec(select(Ticket).where(Ticket.owner_id == current_user.id).offset(skip).limit(limit)).all()
+def read_tickets(
+    skip: int = 0, 
+    limit: int = 100, 
+    status: Optional[str] = None,
+    category: Optional[str] = None,
+    search: Optional[str] = None,
+    session: Session = Depends(get_session), 
+    current_user: User = Depends(get_current_user)
+):
+    query = select(Ticket)
+    
+    if current_user.role != "admin":
+        query = query.where(Ticket.owner_id == current_user.id)
+        
+    if status:
+        query = query.where(Ticket.status == status)
+    if category:
+        query = query.where(Ticket.category == category)
+    if search:
+        query = query.where(
+            or_(
+                Ticket.title.contains(search),
+                Ticket.description.contains(search)
+            )
+        )
+        
+    tickets = session.exec(query.offset(skip).limit(limit)).all()
     return tickets
 
 @router.get("/{ticket_id}", response_model=Ticket)
@@ -47,6 +69,22 @@ def update_ticket(ticket_id: int, ticket_update: Ticket, session: Session = Depe
         if key != "id" and key != "owner_id":
             setattr(db_ticket, key, value)
             
+    session.add(db_ticket)
+    session.commit()
+    session.refresh(db_ticket)
+    return db_ticket
+
+@router.post("/{ticket_id}/assign", response_model=Ticket)
+def assign_ticket(ticket_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can claim tickets")
+        
+    db_ticket = session.get(Ticket, ticket_id)
+    if not db_ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+        
+    db_ticket.assigned_to = current_user.id
+    db_ticket.assigned_username = current_user.username
     session.add(db_ticket)
     session.commit()
     session.refresh(db_ticket)

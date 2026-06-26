@@ -19,8 +19,11 @@ class Ticket(SQLModel, table=True):
     description: str
     status: str = Field(default="open") # open, in_progress, resolved, closed
     priority: str = Field(default="medium") # low, medium, high
+    category: str = Field(default="general") # general, technical, billing, account
     created_at: datetime = Field(default_factory=datetime.utcnow)
     owner_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    assigned_to: Optional[int] = Field(default=None, foreign_key="user.id")
+    assigned_username: Optional[str] = Field(default=None)
 
 class CommentBase(SQLModel):
     content: str

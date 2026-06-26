@@ -9,10 +9,55 @@
 
 .header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 16px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--glass-border);
+}
+
+.filterBar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid var(--glass-border);
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+}
+
+.searchBox input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 0.9rem;
+  width: 150px;
+}
+
+.filterBar select {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid var(--glass-border);
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.filterBar select option {
+  background: #1e293b;
+  color: white;
 }
 
 .icon {
@@ -26,6 +71,50 @@
   font-weight: 600;
   font-size: 1.6rem;
   letter-spacing: -0.02em;
+}
+
+.metaRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.category, .assigned, .unassigned {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  text-transform: capitalize;
+}
+
+.assigned {
+  color: #a855f7;
+  background: rgba(168, 85, 247, 0.1);
+}
+
+.claimBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.claimBtn:hover {
+  background: rgba(59, 130, 246, 0.4);
 }
 
 .ticketList {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Ticket, CheckCircle, Trash2, MessageSquare, Send } from 'lucide-react';
+import { Ticket, CheckCircle, Trash2, MessageSquare, Send, Search, User as UserIcon, Tag, Hand } from 'lucide-react';
+import { jwtDecode } from 'jwt-decode';
 import styles from './TicketDashboard.module.css';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,6 +11,8 @@ interface TicketData {
   description: string;
   status: string;
   priority: string;
+  category: string;
+  assigned_username: string | null;
 }
 
 interface CommentData {
@@ -26,9 +29,27 @@ export default function TicketDashboard() {
   const [newComment, setNewComment] = useState('');
   const { token } = useAuth();
 
+  // Filters & Search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+
+  let userRole = 'user';
+  if (token) {
+    try {
+      const decoded: any = jwtDecode(token);
+      userRole = decoded.role;
+    } catch (e) {}
+  }
+
   const fetchTickets = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/tickets/', {
+      const params = new URLSearchParams();
+      if (searchQuery) params.append('search', searchQuery);
+      if (filterStatus) params.append('status', filterStatus);
+      if (filterCategory) params.append('category', filterCategory);
+
+      const res = await fetch(`http://localhost:8000/api/tickets/?${params.toString()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -42,9 +63,9 @@ export default function TicketDashboard() {
 
   useEffect(() => {
     fetchTickets();
-    const interval = setInterval(fetchTickets, 3000);
+    const interval = setInterval(fetchTickets, 5000); // Poll every 5s
     return () => clearInterval(interval);
-  }, [token]);
+  }, [token, searchQuery, filterStatus, filterCategory]);
 
   const fetchComments = async (ticketId: number) => {
     try {
@@ -117,12 +138,55 @@ export default function TicketDashboard() {
     }
   };
 
+  const handleClaim = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    try {
+      await fetch(`http://localhost:8000/api/tickets/${id}/assign`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      fetchTickets();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <Ticket className={styles.icon} />
-        <h2>Support Tickets</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Ticket className={styles.icon} />
+          <h2>Support Tickets</h2>
+        </div>
+        
+        {/* Search and Filters */}
+        <div className={styles.filterBar}>
+          <div className={styles.searchBox}>
+            <Search size={16} />
+            <input 
+              type="text" 
+              placeholder="Search tickets..." 
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+            <option value="">All Statuses</option>
+            <option value="open">Open</option>
+            <option value="in_progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="closed">Closed</option>
+          </select>
+          <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
+            <option value="">All Categories</option>
+            <option value="general">General</option>
+            <option value="technical">Technical</option>
+            <option value="billing">Billing</option>
+            <option value="account">Account</option>
+          </select>
+        </div>
       </div>
+
       <div className={styles.ticketList}>
         {tickets.map(ticket => (
           <motion.div 
@@ -156,6 +220,22 @@ export default function TicketDashboard() {
                 </button>
               </div>
             </div>
+            
+            <div className={styles.metaRow}>
+              <span className={styles.category}><Tag size={12}/> {ticket.category}</span>
+              {ticket.assigned_username ? (
+                <span className={styles.assigned}><UserIcon size={12}/> {ticket.assigned_username}</span>
+              ) : (
+                userRole === 'admin' ? (
+                  <button onClick={(e) => handleClaim(e, ticket.id)} className={styles.claimBtn}>
+                    <Hand size={12}/> Claim
+                  </button>
+                ) : (
+                  <span className={styles.unassigned}>Unassigned</span>
+                )
+              )}
+            </div>
+
             <p className={styles.description}>{ticket.description}</p>
             
             <div className={styles.footerRow}>
@@ -206,7 +286,7 @@ export default function TicketDashboard() {
           </motion.div>
         ))}
         {tickets.length === 0 && (
-          <p className={styles.emptyState}>No tickets found. Ask the agent to create one!</p>
+          <p className={styles.emptyState}>No tickets found.</p>
         )}
       </div>
     </div>

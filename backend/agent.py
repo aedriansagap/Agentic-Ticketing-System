@@ -21,10 +21,14 @@ def get_tools(token: str):
     headers = {"Authorization": f"Bearer {token}"}
     
     @tool
-    def get_all_tickets() -> str:
-        """Fetch all tickets currently in the system. Use this to list tickets or see what is open."""
+    def get_all_tickets(status: str = "", category: str = "", search: str = "") -> str:
+        """Fetch all tickets currently in the system. Use this to list tickets or see what is open. You can filter by status, category, or a search term."""
         try:
-            response = httpx.get("http://localhost:8000/api/tickets/", headers=headers)
+            params = {}
+            if status: params["status"] = status
+            if category: params["category"] = category
+            if search: params["search"] = search
+            response = httpx.get("http://localhost:8000/api/tickets/", params=params, headers=headers)
             return response.text
         except Exception as e:
             return f"Error: {e}"
@@ -39,12 +43,12 @@ def get_tools(token: str):
             return f"Error: {e}"
 
     @tool
-    def create_new_ticket(title: str, description: str, priority: str = "medium") -> str:
+    def create_new_ticket(title: str, description: str, priority: str = "medium", category: str = "general") -> str:
         """Create a new support ticket."""
         try:
             response = httpx.post(
                 "http://localhost:8000/api/tickets/",
-                json={"title": title, "description": description, "priority": priority, "status": "open"},
+                json={"title": title, "description": description, "priority": priority, "category": category, "status": "open"},
                 headers=headers
             )
             return response.text
