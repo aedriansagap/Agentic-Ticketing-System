@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - backend_data:/app/data
+    environment:
+      # Use host.docker.internal to reach the native llama.cpp running on the host
+      - LLAMA_CPP_SERVER_URL=http://host.docker.internal:8080/v1
+    extra_hosts:
+      # Required for Linux hosts to resolve host.docker.internal
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80" # Map to standard vite port to avoid confusing users
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+volumes:
+  backend_data:

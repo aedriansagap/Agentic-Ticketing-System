@@ -7,3 +7,6 @@ langchain-community
 langchain-openai
 pydantic
 httpx
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
