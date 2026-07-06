@@ -10,3 +10,5 @@ httpx
 python-jose[cryptography]
 passlib[bcrypt]
 python-multipart
+python-dotenv
+psycopg2-binary
