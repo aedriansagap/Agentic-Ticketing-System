@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Bot, User } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import styles from './AgentChat.module.css';
 import { useAuth } from '../context/AuthContext';
 
@@ -53,6 +54,7 @@ export default function AgentChat() {
         sender: 'agent'
       }]);
     } catch (e) {
+      toast.error('Agent is currently offline.');
       setMessages(prev => [...prev, {
         id: Date.now(),
         text: 'Error connecting to the agent server. Is the backend running?',

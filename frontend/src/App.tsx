@@ -3,6 +3,7 @@ import AgentChat from './components/AgentChat';
 import AuthScreen from './components/AuthScreen';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LogOut } from 'lucide-react';
+import { Toaster } from 'react-hot-toast';
 
 function AppContent() {
   const { token, logout } = useAuth();
@@ -13,6 +14,12 @@ function AppContent() {
 
   return (
     <>
+      <Toaster 
+        position="top-right" 
+        toastOptions={{ 
+          style: { background: '#1e293b', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.1)' }
+        }} 
+      />
       <button 
         onClick={logout} 
         style={{ position: 'absolute', top: 16, right: 24, zIndex: 10, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}

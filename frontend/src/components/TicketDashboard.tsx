@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Ticket, CheckCircle, Trash2, MessageSquare, Send, Search, User as UserIcon, Tag, Hand } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
+import { toast } from 'react-hot-toast';
 import styles from './TicketDashboard.module.css';
 import { useAuth } from '../context/AuthContext';
 
@@ -103,8 +104,10 @@ export default function TicketDashboard() {
       });
       setNewComment('');
       fetchComments(ticketId);
+      toast.success('Reply sent');
     } catch (e) {
       console.error(e);
+      toast.error('Failed to send reply');
     }
   };
 
@@ -120,8 +123,10 @@ export default function TicketDashboard() {
         body: JSON.stringify({ ...currentTicket, status: 'resolved' })
       });
       fetchTickets();
+      toast.success('Ticket marked as resolved');
     } catch (e) {
       console.error(e);
+      toast.error('Failed to resolve ticket');
     }
   };
 
@@ -133,8 +138,10 @@ export default function TicketDashboard() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       fetchTickets();
+      toast.success('Ticket deleted');
     } catch (e) {
       console.error(e);
+      toast.error('Failed to delete ticket');
     }
   };
 
@@ -146,8 +153,10 @@ export default function TicketDashboard() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       fetchTickets();
+      toast.success('Ticket claimed successfully');
     } catch (e) {
       console.error(e);
+      toast.error('Failed to claim ticket');
     }
   };
 

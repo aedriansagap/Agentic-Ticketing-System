@@ -84,11 +84,35 @@ body::after {
 .dashboard-section {
   flex: 65;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-section {
   flex: 35;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 1024px) {
+  body {
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .app-container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .dashboard-section, .chat-section {
+    flex: none;
+    height: 800px;
+  }
 }
 
 /* Scrollbar styling */
