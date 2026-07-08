@@ -19,6 +19,7 @@ export default function AgentChat() {
   const [isLoading, setIsLoading] = useState(false);
   const messageListRef = useRef<HTMLDivElement>(null);
   const { token } = useAuth();
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   useEffect(() => {
     if (messageListRef.current) {
@@ -38,7 +39,7 @@ export default function AgentChat() {
     setIsLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8000/api/chat/', {
+      const res = await fetch(`${API_URL}/api/chat/`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

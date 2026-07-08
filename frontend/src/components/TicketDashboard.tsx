@@ -35,6 +35,8 @@ export default function TicketDashboard() {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
 
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
   let userRole = 'user';
   if (token) {
     try {
@@ -50,7 +52,7 @@ export default function TicketDashboard() {
       if (filterStatus) params.append('status', filterStatus);
       if (filterCategory) params.append('category', filterCategory);
 
-      const res = await fetch(`http://localhost:8000/api/tickets/?${params.toString()}`, {
+      const res = await fetch(`${API_URL}/api/tickets/?${params.toString()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -70,7 +72,7 @@ export default function TicketDashboard() {
 
   const fetchComments = async (ticketId: number) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/tickets/${ticketId}/comments`, {
+      const res = await fetch(`${API_URL}/api/tickets/${ticketId}/comments`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -94,7 +96,7 @@ export default function TicketDashboard() {
   const handleAddComment = async (ticketId: number) => {
     if (!newComment.trim()) return;
     try {
-      await fetch(`http://localhost:8000/api/tickets/${ticketId}/comments`, {
+      await fetch(`${API_URL}/api/tickets/${ticketId}/comments`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -114,7 +116,7 @@ export default function TicketDashboard() {
   const handleResolve = async (e: React.MouseEvent, id: number, currentTicket: TicketData) => {
     e.stopPropagation();
     try {
-      await fetch(`http://localhost:8000/api/tickets/${id}`, {
+      await fetch(`${API_URL}/api/tickets/${id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -133,7 +135,7 @@ export default function TicketDashboard() {
   const handleDelete = async (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
     try {
-      await fetch(`http://localhost:8000/api/tickets/${id}`, {
+      await fetch(`${API_URL}/api/tickets/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -148,7 +150,7 @@ export default function TicketDashboard() {
   const handleClaim = async (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
     try {
-      await fetch(`http://localhost:8000/api/tickets/${id}/assign`, {
+      await fetch(`${API_URL}/api/tickets/${id}/assign`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });

@@ -10,6 +10,8 @@ export default function AuthScreen() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login } = useAuth();
+  
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +23,7 @@ export default function AuthScreen() {
         formData.append('username', username);
         formData.append('password', password);
         
-        const res = await fetch('http://localhost:8000/api/auth/token', {
+        const res = await fetch(`${API_URL}/api/auth/token`, {
           method: 'POST',
           body: formData,
         });
@@ -29,7 +31,7 @@ export default function AuthScreen() {
         const data = await res.json();
         login(data.access_token);
       } else {
-        const res = await fetch('http://localhost:8000/api/auth/register', {
+        const res = await fetch(`${API_URL}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password })
@@ -40,7 +42,7 @@ export default function AuthScreen() {
         const formData = new URLSearchParams();
         formData.append('username', username);
         formData.append('password', password);
-        const loginRes = await fetch('http://localhost:8000/api/auth/token', {
+        const loginRes = await fetch(`${API_URL}/api/auth/token`, {
           method: 'POST',
           body: formData,
         });

@@ -1,19 +1,16 @@
-# pyrefly: ignore [missing-import]
 from langchain_core.tools import tool
 # pyrefly: ignore [missing-import]
 from langchain.agents import create_agent
-# pyrefly: ignore [missing-import]
-from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 import httpx
 import os
+from dotenv import load_dotenv
 
-# Assume llama.cpp server is running on 8080
-LLAMA_CPP_SERVER_URL = os.getenv("LLAMA_CPP_SERVER_URL", "http://localhost:8080/v1")
+load_dotenv()
 
-llm = ChatOpenAI(
-    model="gemma-4", 
-    api_key="not-needed",
-    base_url=LLAMA_CPP_SERVER_URL,
+llm = ChatGroq(
+    model="llama3-70b-8192",
+    api_key=os.getenv("GROQ_API_KEY", "not-needed-if-in-env"),
     temperature=0.1
 )
 
