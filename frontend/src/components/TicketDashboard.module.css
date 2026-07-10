@@ -247,13 +247,35 @@
 
 .emptyState {
   grid-column: 1 / -1;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   color: var(--text-secondary);
-  padding: 60px 20px;
+  padding: 80px 20px;
   background: rgba(30, 41, 59, 0.2);
   border: 1px dashed rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  font-size: 1rem;
+}
+
+.emptyState h3 {
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.emptyState p {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.emptyIcon {
+  color: var(--accent-color);
+  opacity: 0.8;
+  margin-bottom: 8px;
 }
 
 .actionBtn {

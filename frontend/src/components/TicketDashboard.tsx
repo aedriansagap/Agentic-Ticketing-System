@@ -198,15 +198,28 @@ export default function TicketDashboard() {
         </div>
       </div>
 
-      <div className={styles.ticketList}>
-        {tickets.map(ticket => (
-          <motion.div 
-            key={ticket.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`${styles.ticketCard} ${expandedTicketId === ticket.id ? styles.expanded : ''}`}
-            onClick={() => handleToggleExpand(ticket.id)}
-          >
+      <motion.div 
+        className={styles.ticketList}
+        variants={{
+          hidden: { opacity: 0 },
+          show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+        }}
+        initial="hidden"
+        animate="show"
+      >
+        <AnimatePresence mode="popLayout">
+          {tickets.map(ticket => (
+            <motion.div 
+              key={ticket.id}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                show: { opacity: 1, y: 0 }
+              }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              layout
+              className={`${styles.ticketCard} ${expandedTicketId === ticket.id ? styles.expanded : ''}`}
+              onClick={() => handleToggleExpand(ticket.id)}
+            >
             <div className={styles.cardHeader}>
               <h3>#{ticket.id} {ticket.title}</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -294,12 +307,21 @@ export default function TicketDashboard() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))}
+        </AnimatePresence>
         {tickets.length === 0 && (
-          <p className={styles.emptyState}>No tickets found.</p>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={styles.emptyState}
+          >
+            <Ticket size={48} className={styles.emptyIcon} />
+            <h3>No tickets found</h3>
+            <p>You're all caught up! Enjoy the silence.</p>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

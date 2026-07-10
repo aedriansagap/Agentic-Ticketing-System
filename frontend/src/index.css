@@ -10,6 +10,8 @@
   --accent-color: #6366f1;
   --accent-hover: #4f46e5;
   --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --mesh-color-1: rgba(99, 102, 241, 0.15);
+  --mesh-color-2: rgba(168, 85, 247, 0.15);
   --status-open: #34d399;
   --status-in-progress: #fbbf24;
   --status-resolved: #60a5fa;
@@ -43,14 +45,14 @@ body::before, body::after {
   height: 200%;
   z-index: -1;
   background-image: 
-    radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.15) 0%, transparent 30%);
+    radial-gradient(circle at 50% 50%, var(--mesh-color-1) 0%, transparent 40%),
+    radial-gradient(circle at 80% 20%, var(--mesh-color-2) 0%, transparent 30%);
   animation: bg-rotate 30s linear infinite;
 }
 
 body::after {
   background-image: 
-    radial-gradient(circle at 20% 80%, rgba(56, 189, 248, 0.1) 0%, transparent 40%);
+    radial-gradient(circle at 20% 80%, var(--mesh-color-1) 0%, transparent 40%);
   animation: bg-rotate 40s linear infinite reverse;
 }
 
@@ -73,12 +75,110 @@ body::after {
 
 .app-container {
   display: flex;
-  height: 100vh;
-  padding: 24px;
+  height: calc(100vh - 72px);
+  padding: 0 24px 24px 24px;
   gap: 24px;
   max-width: 1600px;
   margin: 0 auto;
   overflow: hidden;
+}
+
+/* Topbar Styling */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 72px;
+  padding: 0 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-heading);
+}
+
+.logo-icon {
+  color: var(--accent-color);
+  transition: color 0.3s ease;
+}
+
+.topbar-logo h1 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.topbar-logo span {
+  color: var(--accent-color);
+  transition: color 0.3s ease;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.action-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  height: 40px;
+  min-width: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0 16px;
+}
+
+.action-btn:has(svg:only-child) {
+  padding: 0;
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-picker-container {
+  position: relative;
+}
+
+.theme-dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  z-index: 50;
+  border-radius: 16px;
+}
+
+.theme-option {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s;
+}
+
+.theme-option:hover {
+  transform: scale(1.1);
+}
+
+.theme-option.active {
+  border-color: white;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
 }
 
 .dashboard-section {
