@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Ticket, CheckCircle, Trash2, MessageSquare, Send, Search, User as UserIcon, Tag, Hand } from 'lucide-react';
+import { Ticket, CheckCircle, Trash2, MessageSquare, Send, Search, User as UserIcon, Tag, Hand, AlertTriangle, AlertCircle, ArrowDownCircle } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 import { jwtDecode } from 'jwt-decode';
 import { toast } from 'react-hot-toast';
 import styles from './TicketDashboard.module.css';
@@ -162,6 +163,13 @@ export default function TicketDashboard() {
     }
   };
 
+  const getPriorityBadge = (priority: string) => {
+    const p = priority.toLowerCase();
+    if (p === 'high') return <span className={`${styles.priorityBadge} ${styles.high}`}><AlertTriangle size={14}/> High</span>;
+    if (p === 'medium') return <span className={`${styles.priorityBadge} ${styles.medium}`}><AlertCircle size={14}/> Medium</span>;
+    return <span className={`${styles.priorityBadge} ${styles.low}`}><ArrowDownCircle size={14}/> Low</span>;
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -263,7 +271,7 @@ export default function TicketDashboard() {
             <p className={styles.description}>{ticket.description}</p>
             
             <div className={styles.footerRow}>
-              <span className={styles.priority}>Priority: {ticket.priority}</span>
+              {getPriorityBadge(ticket.priority)}
               <span className={styles.commentCount}>
                 <MessageSquare size={14} /> View Comments
               </span>
@@ -287,7 +295,7 @@ export default function TicketDashboard() {
                         <strong>{comment.author_username}</strong>
                         <p>{comment.content}</p>
                         <span className={styles.commentTime}>
-                          {new Date(comment.created_at).toLocaleString()}
+                          {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                         </span>
                       </div>
                     ))}

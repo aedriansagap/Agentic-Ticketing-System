@@ -2,8 +2,15 @@ import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Bot, User } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import ReactMarkdown from 'react-markdown';
 import styles from './AgentChat.module.css';
 import { useAuth } from '../context/AuthContext';
+
+const QUICK_ACTIONS = [
+  "Create a new ticket",
+  "What are my open tickets?",
+  "Check ticket status"
+];
 
 interface Message {
   id: number;
@@ -85,7 +92,11 @@ export default function AgentChat() {
               {msg.sender === 'agent' ? <Bot size={20} /> : <User size={20} />}
             </div>
             <div className={styles.messageBubble}>
-              {msg.text}
+              {msg.sender === 'agent' ? (
+                <ReactMarkdown>{msg.text}</ReactMarkdown>
+              ) : (
+                msg.text
+              )}
             </div>
           </motion.div>
         ))}
@@ -99,18 +110,37 @@ export default function AgentChat() {
         )}
       </div>
 
-      <div className={styles.inputArea}>
-        <input 
-          type="text" 
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleSend()}
-          placeholder="Ask me to create a ticket..."
-          className={styles.input}
-        />
-        <button onClick={handleSend} disabled={isLoading} className={styles.sendButton}>
-          <Send size={20} />
-        </button>
+      <div>
+        <div className={styles.quickActions}>
+          {QUICK_ACTIONS.map(action => (
+            <button 
+              key={action}
+              className={styles.quickActionChip}
+              onClick={() => {
+                setInput(action);
+                // Optional: we could auto-send it here, but letting them read it is fine.
+                // Or we can auto-send. Let's auto-send it to feel faster.
+                // Wait, handleSend relies on `input` state which hasn't updated yet.
+                // Better to just set the input and let them hit send, or we can handle it directly.
+              }}
+            >
+              {action}
+            </button>
+          ))}
+        </div>
+        <div className={styles.inputArea}>
+          <input 
+            type="text" 
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSend()}
+            placeholder="Ask me to create a ticket..."
+            className={styles.input}
+          />
+          <button onClick={handleSend} disabled={isLoading || !input.trim()} className={styles.sendButton}>
+            <Send size={20} />
+          </button>
+        </div>
       </div>
     </div>
   );

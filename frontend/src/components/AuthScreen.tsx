@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus, Sparkles } from 'lucide-react';
 import styles from './AuthScreen.module.css';
 import { useAuth } from '../context/AuthContext';
 
@@ -62,8 +62,12 @@ export default function AuthScreen() {
         animate={{ opacity: 1, y: 0 }}
       >
         <div className={styles.header}>
+          <div className={styles.logo}>
+            <Sparkles className={styles.logoIcon} size={28} />
+            <h1>Resolve<span>AI</span></h1>
+          </div>
           <h2>{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
-          <p>{isLogin ? 'Sign in to access your tickets' : 'Join the Agentic Ticketing System'}</p>
+          <p>{isLogin ? 'Sign in to access your tickets' : 'Join the Intelligent Support System'}</p>
         </div>
         
         {error && <div className={styles.error}>{error}</div>}
