@@ -8,11 +8,21 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-llm = ChatGroq(
+primary_llm = ChatGroq(
     model="llama-3.3-70b-versatile",
     api_key=os.getenv("GROQ_API_KEY", "not-needed-if-in-env"),
-    temperature=0.1
+    temperature=0.1,
+    max_retries=0
 )
+
+fallback_llm = ChatGroq(
+    model="llama-3.1-8b-instant",
+    api_key=os.getenv("GROQ_API_KEY", "not-needed-if-in-env"),
+    temperature=0.1,
+    max_retries=1
+)
+
+llm = primary_llm.with_fallbacks([fallback_llm])
 
 def get_tools(token: str):
     headers = {"Authorization": f"Bearer {token}"}
