@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Ticket, CheckCircle, Trash2, MessageSquare, Send, Search, User as UserIcon, Tag, Hand, AlertTriangle, AlertCircle, ArrowDownCircle } from 'lucide-react';
+import { Ticket, CheckCircle, Trash2, MessageSquare, Send, Search, User as UserIcon, Tag, Hand, AlertTriangle, AlertCircle, ArrowDownCircle, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { jwtDecode } from 'jwt-decode';
+import Avatar from './Avatar';
 import { toast } from 'react-hot-toast';
 import styles from './TicketDashboard.module.css';
 import { useAuth } from '../context/AuthContext';
@@ -26,7 +27,7 @@ interface CommentData {
 
 export default function TicketDashboard() {
   const [tickets, setTickets] = useState<TicketData[]>([]);
-  const [expandedTicketId, setExpandedTicketId] = useState<number | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<TicketData | null>(null);
   const [comments, setComments] = useState<Record<number, CommentData[]>>({});
   const [newComment, setNewComment] = useState('');
   const { token } = useAuth();
@@ -85,13 +86,13 @@ export default function TicketDashboard() {
     }
   };
 
-  const handleToggleExpand = (ticketId: number) => {
-    if (expandedTicketId === ticketId) {
-      setExpandedTicketId(null);
-    } else {
-      setExpandedTicketId(ticketId);
-      fetchComments(ticketId);
-    }
+  const handleToggleExpand = (ticket: TicketData) => {
+    setSelectedTicket(ticket);
+    fetchComments(ticket.id);
+  };
+
+  const closeDrawer = () => {
+    setSelectedTicket(null);
   };
 
   const handleAddComment = async (ticketId: number) => {
@@ -206,6 +207,21 @@ export default function TicketDashboard() {
         </div>
       </div>
 
+      <div className={styles.metricCards}>
+        <div className={styles.metricCard}>
+          <h4>Total Tickets</h4>
+          <span className={styles.metricValue}>{tickets.length}</span>
+        </div>
+        <div className={styles.metricCard}>
+          <h4>Open Tickets</h4>
+          <span className={styles.metricValue}>{tickets.filter(t => t.status === 'open').length}</span>
+        </div>
+        <div className={styles.metricCard}>
+          <h4>High Priority</h4>
+          <span className={styles.metricValue}>{tickets.filter(t => t.priority === 'high').length}</span>
+        </div>
+      </div>
+
       <motion.div 
         className={styles.ticketList}
         variants={{
@@ -225,8 +241,8 @@ export default function TicketDashboard() {
               }}
               exit={{ opacity: 0, scale: 0.95 }}
               layout
-              className={`${styles.ticketCard} ${expandedTicketId === ticket.id ? styles.expanded : ''}`}
-              onClick={() => handleToggleExpand(ticket.id)}
+              className={styles.ticketCard}
+              onClick={() => handleToggleExpand(ticket)}
             >
             <div className={styles.cardHeader}>
               <h3>#{ticket.id} {ticket.title}</h3>
@@ -277,44 +293,6 @@ export default function TicketDashboard() {
               </span>
             </div>
 
-            <AnimatePresence>
-              {expandedTicketId === ticket.id && (
-                <motion.div 
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className={styles.commentsSection}
-                  onClick={e => e.stopPropagation()}
-                >
-                  <div className={styles.commentsList}>
-                    {comments[ticket.id]?.length === 0 && (
-                      <p className={styles.noComments}>No comments yet.</p>
-                    )}
-                    {comments[ticket.id]?.map(comment => (
-                      <div key={comment.id} className={styles.commentBubble}>
-                        <strong>{comment.author_username}</strong>
-                        <p>{comment.content}</p>
-                        <span className={styles.commentTime}>
-                          {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className={styles.addComment}>
-                    <input 
-                      type="text" 
-                      value={newComment}
-                      onChange={e => setNewComment(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && handleAddComment(ticket.id)}
-                      placeholder="Add a reply..."
-                    />
-                    <button onClick={() => handleAddComment(ticket.id)}>
-                      <Send size={16} />
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
             </motion.div>
           ))}
         </AnimatePresence>
@@ -330,6 +308,85 @@ export default function TicketDashboard() {
           </motion.div>
         )}
       </motion.div>
+
+      <AnimatePresence>
+        {selectedTicket && (
+          <motion.div 
+            className={styles.drawerOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeDrawer}
+          >
+            <motion.div 
+              className={styles.drawer}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className={styles.drawerHeader}>
+                <div>
+                  <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: 'white' }}>
+                    #{selectedTicket.id} {selectedTicket.title}
+                  </h3>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <span className={`${styles.status} ${styles[selectedTicket.status]}`}>
+                      {selectedTicket.status.replace('_', ' ')}
+                    </span>
+                    {getPriorityBadge(selectedTicket.priority)}
+                  </div>
+                </div>
+                <button className={styles.closeBtn} onClick={closeDrawer}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '24px' }}>
+                {selectedTicket.description}
+              </p>
+
+              <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <h4 style={{ marginBottom: '16px', color: 'white' }}>Discussion</h4>
+                
+                <div className={styles.commentsList} style={{ maxHeight: 'none', flex: 1 }}>
+                  {comments[selectedTicket.id]?.length === 0 && (
+                    <p className={styles.noComments}>No comments yet.</p>
+                  )}
+                  {comments[selectedTicket.id]?.map(comment => (
+                    <div key={comment.id} className={styles.commentBubble} style={{ display: 'flex', flexDirection: 'row', gap: '12px', alignItems: 'flex-start' }}>
+                      <Avatar username={comment.author_username} size={32} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                          <strong>{comment.author_username}</strong>
+                          <span className={styles.commentTime}>
+                            {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                          </span>
+                        </div>
+                        <p>{comment.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className={styles.addComment} style={{ marginTop: '16px' }}>
+                  <input 
+                    type="text" 
+                    value={newComment}
+                    onChange={e => setNewComment(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleAddComment(selectedTicket.id)}
+                    placeholder="Add a reply..."
+                  />
+                  <button onClick={() => handleAddComment(selectedTicket.id)}>
+                    <Send size={16} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

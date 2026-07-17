@@ -108,13 +108,15 @@ def get_tools(token: str):
 
 system_msg = "You are an AI support agent. You help users manage support tickets. You must ALWAYS use tools to view, create, or update tickets. When discussing a specific ticket, you should use read_ticket_comments to understand the context, and add_comment_to_ticket to officially log the user's replies to the ticket thread."
 
-def process_chat(message: str, token: str) -> str:
+def process_chat(history: list[tuple[str, str]], token: str) -> str:
     tools = get_tools(token)
     agent_executor = create_agent(model=llm, tools=tools, system_prompt=system_msg)
     try:
-        result = agent_executor.invoke({"messages": [
-            ("user", message)
-        ]})
+        messages = []
+        for role, txt in history:
+            messages.append((role, txt))
+            
+        result = agent_executor.invoke({"messages": messages})
         return result["messages"][-1].content
     except Exception as e:
         print(f"Agent error: {e}")

@@ -6,6 +6,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { LogOut, Palette, Sparkles } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { jwtDecode } from 'jwt-decode';
+import Avatar from './components/Avatar';
 
 const THEMES = [
   { id: 'indigo', color: '#6366f1', hover: '#4f46e5', gradient: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', mesh1: 'rgba(99, 102, 241, 0.15)', mesh2: 'rgba(168, 85, 247, 0.15)' },
@@ -33,6 +35,12 @@ function AppContent() {
     return <AuthScreen />;
   }
 
+  let username = 'User';
+  try {
+    const decoded: any = jwtDecode(token);
+    username = decoded.sub || 'User';
+  } catch (e) {}
+
   return (
     <>
       <Toaster 
@@ -50,6 +58,11 @@ function AppContent() {
         </div>
         
         <div className="topbar-actions">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '8px', fontWeight: 500 }}>
+            <Avatar username={username} size={32} />
+            <span style={{ fontSize: '0.95rem' }}>{username}</span>
+          </div>
+
           <div className="theme-picker-container">
             <button 
               className="action-btn" 

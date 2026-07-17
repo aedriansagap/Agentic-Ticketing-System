@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Bot, User } from 'lucide-react';
+import { Send, Bot } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
+import { jwtDecode } from 'jwt-decode';
+import Avatar from './Avatar';
 import styles from './AgentChat.module.css';
 import { useAuth } from '../context/AuthContext';
 
@@ -27,6 +29,14 @@ export default function AgentChat() {
   const messageListRef = useRef<HTMLDivElement>(null);
   const { token } = useAuth();
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+  let username = 'User';
+  if (token) {
+    try {
+      const decoded: any = jwtDecode(token);
+      username = decoded.sub || 'User';
+    } catch (e) {}
+  }
 
   useEffect(() => {
     if (messageListRef.current) {
@@ -89,7 +99,7 @@ export default function AgentChat() {
             className={`${styles.messageWrapper} ${styles[msg.sender]}`}
           >
             <div className={styles.avatar}>
-              {msg.sender === 'agent' ? <Bot size={20} /> : <User size={20} />}
+              {msg.sender === 'agent' ? <Bot size={20} /> : <Avatar username={username} size={36} />}
             </div>
             <div className={styles.messageBubble}>
               {msg.sender === 'agent' ? (

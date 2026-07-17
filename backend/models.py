@@ -37,3 +37,15 @@ class Comment(CommentBase, table=True):
     author_id: int = Field(foreign_key="user.id")
     author_username: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class ChatMessageBase(SQLModel):
+    sender: str # "user" or "agent"
+    content: str
+
+class ChatMessageCreate(ChatMessageBase):
+    pass
+
+class ChatMessage(ChatMessageBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
